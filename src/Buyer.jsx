@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
-import { ArrowLeft, Check, Home, MapPin, Minus, Package, Plus, Search, ShieldCheck, ShoppingCart, Star, Store, Truck } from 'lucide-react';
+import { ArrowLeft, Check, Home, Recycle, MapPin, Minus, Package, Plus, Search, ShieldCheck, ShoppingCart, Star, Store, Truck } from 'lucide-react';
 import { CATEGORIES, DELIVERY_FEE, STATUS_FLOW, STATUS_LABEL, orderSubtotal, orderTotal, rupees } from './data';
 import { useStore } from './store';
+import Secondhand from './Secondhand';
 import { BottomNav, CategoryIcon, Empty, Header, Page, StatusChip, catOf, timeAgo } from './ui';
 
 export default function Buyer() {
@@ -17,7 +18,8 @@ export default function Buyer() {
     <>
       <Header sub="Shopping near you" />
       <BottomNav active={tab} onChange={go} tabs={[
-        { id: 'home', label: 'Shop', icon: Home },
+        { id: 'home', label: 'Local brands', icon: Home },
+        { id: 'secondhand', label: 'Secondhand', icon: Recycle },
         { id: 'cart', label: 'Cart', icon: ShoppingCart, badge: cartCount },
         { id: 'orders', label: 'Orders', icon: Package, badge: active },
       ]} />
@@ -25,6 +27,7 @@ export default function Buyer() {
         {view?.type === 'product' && <ProductDetail id={view.id} onBack={() => setView(null)} openBrand={(id) => open({ type: 'brand', id })} goCart={() => go('cart')} />}
         {view?.type === 'brand' && <BrandStore id={view.id} onBack={() => setView(null)} openProduct={(id) => open({ type: 'product', id })} />}
         {!view && tab === 'home' && <Shop open={open} />}
+        {!view && tab === 'secondhand' && <Secondhand />}
         {!view && tab === 'cart' && <Cart onDone={() => go('orders')} onShop={() => go('home')} />}
         {!view && tab === 'orders' && <Orders onShop={() => go('home')} />}
       </Page>

@@ -1,12 +1,15 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { INITIAL_BRANDS, INITIAL_ORDERS, INITIAL_PRODUCTS, INITIAL_USERS, STATUS_FLOW } from './data';
+import { DEMO_HANDOVER_CODE, INITIAL_BRANDS, INITIAL_DEALS, INITIAL_LISTINGS, INITIAL_MESSAGES, INITIAL_ORDERS, INITIAL_PRODUCTS, INITIAL_USERS, STATUS_FLOW } from './data';
 
-const KEY = 'snapsell-local-v1';
+const KEY = 'snapsell-local-v2';
 const fresh = () => ({
   users: INITIAL_USERS,
   brands: INITIAL_BRANDS,
   products: INITIAL_PRODUCTS,
   orders: INITIAL_ORDERS,
+  listings: INITIAL_LISTINGS,
+  deals: INITIAL_DEALS,
+  messages: INITIAL_MESSAGES,
   session: null, // { userId }
   cart: [], // { productId, qty }
 });
@@ -124,7 +127,49 @@ export function StoreProvider({ children }) {
     updateProduct: (id, patch) => setS((p) => ({ ...p, products: p.products.map((x) => (x.id === id ? { ...x, ...patch } : x)) })),
     deleteProduct: (id) => setS((p) => ({ ...p, products: p.products.filter((x) => x.id !== id) })),
     updateBrand: (id, patch) => setS((p) => ({ ...p, brands: p.brands.map((b) => (b.id === id ? { ...b, ...patch } : b)) })),
+    // ───── Platform 2: Secondhand ─────
+    createListing: (listing) =>
+      setS((p) => ({ ...p, listings: [{ ...listing, id: 'L-' + Date.now(), sellerId: p.session.userId, status: 'active', createdAt: new Date().toISOString() }, ...p.listings] })),
+    updateListing: (id, patch) => setS((p) => ({ ...p, listings: p.listings.map((l) => (l.id === id ? { ...l, ...patch } : l)) })),
+    sendMessage: (listingId, toId, text) =>
+      setS((p) => ({ ...p, messages: [...p.messages, { id: 'M-' + Date.now() + Math.random(), listingId, fromId: p.session.userId, toId, text, createdAt: new Date().toISOString() }] })),
+    // Buyer starts a deal. Mock sellers (not demo accounts) respond automatically so the flow can be demoed alone.
+    startDeal: (listingId, payment) => {
+      const id = 'D-' + Date.now();
+      setS((p) => {
+        const l = p.listings.find((x) => x.id === listingId);
+        const deal = { id, listingId, buyerId: p.session.userId, sellerId: l.sellerId, mode: l.mode, payment, status: l.mode === 'ship' ? 'paid' : 'requested', price: l.price, code: DEMO_HANDOVER_CODE, createdAt: new Date().toISOString() };
+        return { ...p, deals: [deal, ...p.deals], listings: p.listings.map((x) => (x.id === listingId ? { ...x, status: 'reserved' } : x)) };
+      });
+      setTimeout(() => setS((p) => {
+        const d = p.deals.find((x) => x.id === id);
+        if (!d || !d.sellerId.startsWith('u-p')) return p;
+        const reply = d.mode === 'ship'
+          ? { status: 'shipped', courier: 'Delhivery', tracking: 'DLV ' + String(Date.now()).slice(-10).replace(/(\d{4})(\d{4})(\d{2})/, '$1 $2 $3') }
+          : { status: 'accepted' };
+        const text = d.mode === 'ship' ? 'Packed and shipped today. Tracking is in the app.' : 'Accepted! I can meet today at 6 pm near the main gate.';
+        return {
+          ...p,
+          deals: p.deals.map((x) => (x.id === id ? { ...x, ...reply } : x)),
+          messages: [...p.messages, { id: 'M-' + Date.now(), listingId: d.listingId, fromId: d.sellerId, toId: d.buyerId, text, createdAt: new Date().toISOString() }],
+        };
+      }), 2500);
+      return id;
+    },
+    setDeal: (id, patch) =>
+      setS((p) => {
+        const deal = p.deals.find((d) => d.id === id);
+        const next = { ...deal, ...patch };
+        const sold = ['completed', 'received'].includes(next.status);
+        const reopened = next.status === 'cancelled';
+        return {
+          ...p,
+          deals: p.deals.map((d) => (d.id === id ? next : d)),
+          listings: p.listings.map((l) => (l.id === deal.listingId ? { ...l, status: sold ? 'sold' : reopened ? 'active' : l.status } : l)),
+        };
+      }),
   };
+
 
   return <Ctx.Provider value={{ ...s, me, myBrand, ...actions }}>{children}</Ctx.Provider>;
 }

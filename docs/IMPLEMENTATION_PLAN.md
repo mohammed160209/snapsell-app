@@ -40,7 +40,7 @@ Repo: `https://github.com/mohammed160209/snapsell-app` · Live: `https://snapsel
 - P1 business: dashboard KPIs, order pipeline (accept → out for delivery / ready for pickup → completed, decline), products CRUD + stock +/- + hide, storefront settings, payouts after commission.
 - Admin: GMV, commission, sales by seller, approve/suspend sellers, all orders table, reset demo data.
 
-**Phase A2 — in progress:** P2 Secondhand inside the same app (section 6.2).
+**Phase A2 — done (21 Nov):** P2 Secondhand inside the same app (section 6.2): feed, listing detail, AI-simulated sell flow, meet/ship selling modes, deals (buying/selling with handover code and shipping tracking), chat, admin secondhand tab. Mock sellers auto-accept/ship after 2.5 s so the flow can be demoed solo.
 
 **Not started:** real backend (Supabase), real payments (Razorpay), real AI (Claude), photo upload, notifications.
 
@@ -301,7 +301,7 @@ All in `src/data.js`. Do not invent names elsewhere.
 | Phase | Scope | Owner | Done when |
 |---|---|---|---|
 | A ✅ | P1 front-end + admin, mock data, deploy | Mohammed + Claude | Live link works end to end |
-| A2 | P2 Secondhand front-end (6.2) + admin tiles | Claude | AC in 6.2 pass in browser |
+| A2 ✅ | P2 Secondhand front-end (6.2) + admin tiles | Claude | AC in 6.2 pass in browser |
 | B1 | Supabase project, migration from 5.2, RLS 5.3, seed script from `data.js` | Backend | Tables + policies exist; seed loads |
 | B2 | Replace `store.jsx` actions with Supabase calls (auth, products, orders, listings, deals, messages); keep same action names so screens don't change | Frontend | App works logged in as two real users in two browsers |
 | B3 | Storage photo upload in sell flow + product form | Frontend | Photos persist and show on cards |

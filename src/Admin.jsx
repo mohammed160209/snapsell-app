@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { IndianRupee, LayoutDashboard, ShoppingBag, Store, TrendingUp, Users } from 'lucide-react';
-import { COMMISSION_RATE, orderCommission, orderSubtotal, rupees } from './data';
+import { IndianRupee, LayoutDashboard, Recycle, ShoppingBag, Store, TrendingUp, Users } from 'lucide-react';
+import { COMMISSION_RATE, SH_COMMISSION_RATE, orderCommission, orderSubtotal, rupees } from './data';
 import { useStore } from './store';
 import { BottomNav, CategoryIcon, Header, Page, StatusChip, timeAgo } from './ui';
 
@@ -15,18 +15,22 @@ export default function Admin() {
         { id: 'overview', label: 'Overview', icon: LayoutDashboard },
         { id: 'sellers', label: 'Sellers', icon: Store, badge: pending },
         { id: 'orders', label: 'Orders', icon: ShoppingBag },
+        { id: 'listings', label: 'Secondhand', icon: Recycle },
       ]} />
       <Page>
         {tab === 'overview' && <Overview />}
         {tab === 'sellers' && <Sellers />}
         {tab === 'orders' && <AllOrders />}
+        {tab === 'listings' && <Listings />}
       </Page>
     </>
   );
 }
 
 function Overview() {
-  const { orders, brands, users } = useStore();
+  const { orders, brands, users, listings, deals } = useStore();
+  const shDone = deals.filter((d) => ['completed', 'received'].includes(d.status));
+  const shApp = shDone.filter((d) => d.payment === 'app').reduce((s, d) => s + d.price, 0);
   const valid = orders.filter((o) => o.status !== 'cancelled');
   const gmv = valid.reduce((s, o) => s + orderSubtotal(o), 0);
   const commission = valid.reduce((s, o) => s + orderCommission(o), 0);
@@ -42,6 +46,12 @@ function Overview() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {tiles.map(([l, v, Icon]) => (
           <div key={l} className="card p-4"><div className="flex items-center justify-between text-[12px] font-semibold text-[#7C8199]">{l}<Icon className="w-4 h-4" /></div><div className="text-[22px] font-extrabold mt-1 tabular-nums">{v}</div></div>
+        ))}
+      </div>
+      <h2 className="text-[17px] font-bold -mb-2">Secondhand</h2>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {[['Active listings', listings.filter((l) => l.status === 'active').length], ['Open deals', deals.filter((d) => !['completed', 'received', 'cancelled'].includes(d.status)).length], ['Completed deals', shDone.length], [`In-app fee (${SH_COMMISSION_RATE * 100}%)`, rupees(shApp * SH_COMMISSION_RATE)]].map(([l, v]) => (
+          <div key={l} className="card p-4"><div className="text-[12px] font-semibold text-[#7C8199]">{l}</div><div className="text-[22px] font-extrabold mt-1 tabular-nums">{v}</div></div>
         ))}
       </div>
       <div className="card p-4">
@@ -104,6 +114,24 @@ function AllOrders() {
           </tbody>
         </table>
       </div>
+    </div>
+  );
+}
+
+function Listings() {
+  const { listings, updateListing } = useStore();
+  return (
+    <div className="grid gap-3">
+      <h1 className="text-[22px] font-extrabold">Secondhand listings</h1>
+      {listings.map((l) => (
+        <div key={l.id} className="card p-3 flex items-center gap-3">
+          <img src={l.photo} alt="" className="w-14 h-14 rounded-[10px] object-cover bg-[#EEF0FF]" />
+          <div className="flex-1 min-w-0"><div className="font-semibold truncate">{l.title}</div><div className="text-[12px] text-[#7C8199]">{rupees(l.price)} · {l.area} · {l.mode === 'ship' ? 'Ships' : 'Meet'} · {timeAgo(l.createdAt)}</div></div>
+          <span className="chip bg-[#F1F1F4] text-[#4E5369] capitalize">{l.status}</span>
+          {l.status === 'active' && <button className="btn btn-ghost h-9" onClick={() => updateListing(l.id, { status: 'hidden' })}>Hide</button>}
+          {l.status === 'hidden' && <button className="btn btn-ghost h-9" onClick={() => updateListing(l.id, { status: 'active' })}>Restore</button>}
+        </div>
+      ))}
     </div>
   );
 }

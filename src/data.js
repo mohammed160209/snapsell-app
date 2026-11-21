@@ -67,3 +67,74 @@ export const orderSubtotal = (o) => o.items.reduce((s, i) => s + i.price * i.qty
 export const orderTotal = (o) => orderSubtotal(o) + (o.fulfilment === 'delivery' ? DELIVERY_FEE : 0);
 export const orderCommission = (o) => Math.round(orderSubtotal(o) * COMMISSION_RATE);
 export const rupees = (n) => '₹' + Math.round(n).toLocaleString('en-IN');
+
+// ───────────── Platform 2: Secondhand (every user can buy and sell) ─────────────
+export const SH_COMMISSION_RATE = 0.05; // only on in-app payments; cash deals are free
+export const DEMO_HANDOVER_CODE = '4827';
+
+export const SH_CATEGORIES = [
+  { id: 'furniture', name: 'Furniture' },
+  { id: 'electronics', name: 'Electronics' },
+  { id: 'books', name: 'Books' },
+  { id: 'cycles', name: 'Cycles' },
+  { id: 'appliances', name: 'Appliances' },
+  { id: 'bags', name: 'Bags & Fashion' },
+];
+
+export const CONDITIONS = {
+  like_new: { label: 'Like new', cls: 'bg-[#E7F7EE] text-[#157F3E]' },
+  good: { label: 'Good', cls: 'bg-[#EEF0FF] text-[#3B2FD9]' },
+  fair: { label: 'Fair', cls: 'bg-[#FEF6E4] text-[#B45309]' },
+  for_parts: { label: 'For parts', cls: 'bg-[#F1F1F4] text-[#4E5369]' },
+};
+
+// What the (simulated) AI writes for each category in the sell flow.
+export const AI_TEMPLATES = {
+  furniture: { guess: 'Wooden study table', title: 'Wooden study table with drawer', desc: 'Sturdy engineered-wood study table with one drawer and a cable cut-out. Fits a laptop and monitor comfortably. Easy to dismantle for moving.', low: 2500, high: 3500, photo: './images/study-table-2.jpg' },
+  electronics: { guess: 'Over-ear headphones', title: 'Wireless over-ear headphones', desc: 'Bluetooth headphones with active noise cancellation and around 25 hours of battery. Ear cushions in clean condition. Charging cable included.', low: 3000, high: 5000, photo: './images/headphones.jpg' },
+  books: { guess: 'Set of textbooks', title: 'Competitive exam textbook set', desc: 'Complete set of reference books with light pencil notes. No torn pages. Great for first-time aspirants.', low: 800, high: 1400, photo: './images/textbooks.jpg' },
+  cycles: { guess: 'Geared bicycle', title: '21-speed geared bicycle', desc: '26-inch geared cycle with front suspension and disc brakes. Recently serviced, tyres in good shape. Ideal for daily commute.', low: 4000, high: 6000, photo: './images/hero-cycle.jpg' },
+  appliances: { guess: 'Air cooler', title: 'Personal air cooler, 25 L', desc: 'Compact air cooler with three speeds and honeycomb pads. Cools a 120 sq ft room well. Pads replaced this summer.', low: 1800, high: 2800, photo: './images/prestige-cooler.jpg' },
+  bags: { guess: 'Laptop backpack', title: '30 L laptop backpack', desc: 'Water-resistant backpack with a padded 15.6" laptop sleeve and two side bottle pockets. Zips work smoothly.', low: 700, high: 1200, photo: './images/backpack.jpg' },
+};
+
+export const AI_QUESTIONS = [
+  { id: 'age', q: 'How old is it?', options: ['Under 6 months', '6–18 months', '1–3 years', '3+ years'] },
+  { id: 'defects', q: 'Any defects or wear?', options: ['None', 'Minor scratches', 'Visible wear', 'Needs repair'] },
+  { id: 'included', q: "What's included?", options: ['Item only', 'Original box', 'Bill + box', 'Extra accessories'] },
+];
+
+export const PEOPLE = {
+  'u-buyer': { name: 'Kabir Mehta', area: 'Koramangala', deals: 3 },
+  'u-p1': { name: 'Riya Sharma', area: 'Koramangala', deals: 6 },
+  'u-p2': { name: 'Arjun Nair', area: 'HSR Layout', deals: 2 },
+  'u-p3': { name: 'Meera Iyer', area: 'Indiranagar', deals: 9 },
+  'u-p4': { name: 'Rohan Das', area: 'Jayanagar', deals: 4 },
+  'u-p5': { name: 'Sana Khan', area: 'BTM Layout', deals: 1 },
+  'u-p6': { name: 'Vikram Joshi', area: 'Koramangala', deals: 5 },
+};
+
+export const INITIAL_LISTINGS = [
+  { id: 'L1', sellerId: 'u-p1', title: 'Solid sheesham study table with drawer', category: 'furniture', condition: 'like_new', price: 3200, photo: './images/study-table-1.jpg', desc: 'Moving out of my PG, selling my study table. Solid sheesham top, one drawer, very stable. Small scratch on the left edge (shown in photo 2).', facts: ['Bought in 2024', 'Small scratch on left edge', 'Chair not included'], mode: 'meet', area: 'Koramangala', status: 'active', aiWritten: true, createdAt: ago(2) },
+  { id: 'L2', sellerId: 'u-p6', title: 'Hero Sprint 21-speed cycle', category: 'cycles', condition: 'good', price: 4800, photo: './images/hero-cycle.jpg', desc: '21-speed geared cycle, serviced last month. Front suspension works well, new brake pads.', facts: ['Serviced Oct 2026', 'New brake pads', 'Lock included'], mode: 'meet', area: 'Koramangala', status: 'active', aiWritten: true, createdAt: ago(5) },
+  { id: 'L3', sellerId: 'u-p3', title: 'Sony wireless noise-cancelling headphones', category: 'electronics', condition: 'like_new', price: 4500, photo: './images/headphones.jpg', desc: 'Used for 4 months, works perfectly. ANC is excellent. Comes with case and cable.', facts: ['Bill available', 'Case + cable included', 'No scratches'], mode: 'ship', area: 'Indiranagar', status: 'active', aiWritten: true, createdAt: ago(8) },
+  { id: 'L4', sellerId: 'u-p4', title: 'Prestige 25 L personal air cooler', category: 'appliances', condition: 'good', price: 2100, photo: './images/prestige-cooler.jpg', desc: 'Cools a small room well. Honeycomb pads replaced this summer. Three speed settings.', facts: ['Pads replaced 2026', 'Remote not included'], mode: 'meet', area: 'Jayanagar', status: 'active', aiWritten: false, createdAt: ago(20) },
+  { id: 'L5', sellerId: 'u-p2', title: 'UPSC CSE GS book set (12 volumes)', category: 'books', condition: 'good', price: 1150, photo: './images/textbooks.jpg', desc: 'Complete GS set including Laxmikanth, Spectrum and NCERTs. Light pencil marks only.', facts: ['12 books', 'Light pencil notes', 'No torn pages'], mode: 'ship', area: 'HSR Layout', status: 'active', aiWritten: true, createdAt: ago(26) },
+  { id: 'L6', sellerId: 'u-p5', title: 'IKEA Poäng armchair, beige cushion', category: 'furniture', condition: 'good', price: 2400, photo: './images/ikea-chair.jpg', desc: 'Comfortable bentwood armchair. Cushion cover washed recently. Pickup only, it does not fit in an auto.', facts: ['Cushion cover washable', 'Pickup from BTM'], mode: 'meet', area: 'BTM Layout', status: 'active', aiWritten: true, createdAt: ago(30) },
+  { id: 'L7', sellerId: 'u-p6', title: 'Bajaj 750 W mixer grinder, 3 jars', category: 'appliances', condition: 'fair', price: 1300, photo: './images/mixer-grinder.jpg', desc: 'Motor works fine, small jar lid is slightly loose. All three jars included.', facts: ['3 jars', 'Small jar lid loose'], mode: 'meet', area: 'Koramangala', status: 'active', aiWritten: false, createdAt: ago(40) },
+  { id: 'L8', sellerId: 'u-buyer', title: 'Decathlon Quechua 30 L backpack', category: 'bags', condition: 'like_new', price: 950, photo: './images/backpack.jpg', desc: 'Used for one trek. Padded laptop sleeve, rain cover included.', facts: ['Rain cover included', 'Used once'], mode: 'meet', area: 'Koramangala', status: 'reserved', aiWritten: true, createdAt: ago(10) },
+  { id: 'L9', sellerId: 'u-p1', title: 'Engineered-wood study table, white', category: 'furniture', condition: 'fair', price: 1200, photo: './images/study-table-3.jpg', desc: 'Basic study table, a bit wobbly on one leg (needs one screw). Good for a student budget.', facts: ['One leg needs a screw', 'Pickup only'], mode: 'meet', area: 'Koramangala', status: 'sold', aiWritten: true, createdAt: ago(72) },
+];
+
+export const INITIAL_DEALS = [
+  // Someone wants to buy Kabir's backpack: Kabir (seller) can accept and complete it.
+  { id: 'D1', listingId: 'L8', buyerId: 'u-p2', sellerId: 'u-buyer', mode: 'meet', payment: 'app', status: 'requested', price: 950, code: DEMO_HANDOVER_CODE, createdAt: ago(1) },
+  // Kabir bought headphones shipped from Meera: he can mark received.
+  { id: 'D2', listingId: 'L10', title: 'boAt Rockerz 450 headphones', photo: './images/headphones.jpg', buyerId: 'u-buyer', sellerId: 'u-p3', mode: 'ship', payment: 'app', status: 'shipped', price: 900, courier: 'Delhivery', tracking: 'DLV 4402 1187 63', createdAt: ago(30) },
+];
+
+export const INITIAL_MESSAGES = [
+  { id: 'M1', listingId: 'L8', fromId: 'u-p2', toId: 'u-buyer', text: 'Hi Kabir, is the backpack still available?', createdAt: ago(1.2) },
+  { id: 'M2', listingId: 'L8', fromId: 'u-buyer', toId: 'u-p2', text: 'Yes! Can meet near Forum Mall after 6.', createdAt: ago(1.1) },
+  { id: 'M3', listingId: 'L8', fromId: 'u-p2', toId: 'u-buyer', text: 'Perfect, sent a request to buy. See you at 6.', createdAt: ago(1) },
+];
