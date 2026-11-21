@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+html, body { background: #F7F7FA; color: #111322; -webkit-tap-highlight-color: transparent; }
+.card { background: #fff; border: 1px solid #E8EAF2; border-radius: 16px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 42px; padding: 0 16px; border-radius: 12px; font-weight: 600; font-size: 14px; transition: background .15s, transform .1s; }
+.btn:active { transform: scale(.98); }
+.btn-primary { background: #3B2FD9; color: #fff; }
+.btn-primary:hover { background: #2E23B8; }
+.btn-coral { background: #FF5A3D; color: #fff; }
+.btn-coral:hover { background: #EA472A; }
+.btn-ghost { background: #fff; border: 1px solid #E8EAF2; color: #111322; }
+.btn-ghost:hover { background: #F7F7FA; }
+.input { width: 100%; height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid #E8EAF2; background: #fff; font-size: 14px; outline: none; }
+.input:focus { border-color: #3B2FD9; box-shadow: 0 0 0 3px rgba(59,47,217,.12); }
+.chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
