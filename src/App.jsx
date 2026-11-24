@@ -1,5 +1,6 @@
 import React from 'react';
 import { StoreProvider, useStore } from './store';
+import { ChromeProvider } from './ui';
 import Onboarding from './Onboarding';
 import Buyer from './Buyer';
 import Seller from './Seller';
@@ -16,7 +17,9 @@ function Router() {
 export default function App() {
   return (
     <StoreProvider>
-      <Router />
+      <ChromeProvider>
+        <Router />
+      </ChromeProvider>
     </StoreProvider>
   );
 }

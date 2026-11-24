@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Camera, Check, Handshake, ImagePlus, Loader2, MapPin, MessageCircle, Package, Search, Send, ShieldCheck, Sparkles, Tag, Truck } from 'lucide-react';
+import { Camera, Check, Handshake, ImagePlus, Loader2, MapPin, MessageCircle, Package, Search, Send, ShieldCheck, Sparkles, Tag, Truck } from 'lucide-react';
 import { AI_QUESTIONS, AI_TEMPLATES, CONDITIONS, DEMO_HANDOVER_CODE, PEOPLE, SH_CATEGORIES, SH_COMMISSION_RATE, rupees } from './data';
 import { useStore } from './store';
-import { Empty, timeAgo } from './ui';
+import { ActionBar, Empty, ScreenTitle, TopBar, timeAgo } from './ui';
 
 const person = (id, users) => PEOPLE[id] || { name: users.find((u) => u.id === id)?.name || 'Neighbour', area: users.find((u) => u.id === id)?.area || '', deals: 0 };
 
@@ -38,16 +38,15 @@ export default function Secondhand() {
 
   return (
     <div className="grid gap-4">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex gap-2">
-          {[['browse', 'Browse'], ['mine', 'My listings'], ['deals', 'Deals']].map(([id, l]) => (
-            <button key={id} onClick={() => setSection(id)} className={`chip h-9 px-4 text-[13px] ${section === id ? 'bg-[#111322] text-white' : 'bg-white border border-[#E8EAF2]'}`}>
-              {l}{id === 'deals' && actionable > 0 && <span className="ml-1 min-w-[18px] h-[18px] rounded-full bg-[#FF5A3D] text-white text-[10px] inline-flex items-center justify-center">{actionable}</span>}
-            </button>
-          ))}
-        </div>
-        <button className="btn btn-coral" onClick={() => open({ type: 'sell' })}><Camera className="w-4 h-4" />Sell an item</button>
+      <ScreenTitle sub="Buy and sell with people near you" right={<button className="btn btn-coral max-md:hidden" onClick={() => open({ type: 'sell' })}><Camera className="w-4 h-4" />Sell an item</button>}>Secondhand</ScreenTitle>
+      <div className="grid grid-cols-3 gap-1 p-1 rounded-[14px] bg-[#EDEEF4] md:max-w-md" role="tablist" aria-label="Secondhand sections">
+        {[['browse', 'Browse'], ['mine', 'My listings'], ['deals', 'Deals']].map(([id, l]) => (
+          <button key={id} role="tab" aria-selected={section === id} onClick={() => setSection(id)} className={`h-10 rounded-[11px] text-[14px] font-semibold flex items-center justify-center gap-1 transition-colors ${section === id ? 'bg-white shadow-sm text-[#111322]' : 'text-[#4E5369]'}`}>
+            {l}{id === 'deals' && actionable > 0 && <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-[#FF5A3D] text-white text-[10px] inline-flex items-center justify-center">{actionable}</span>}
+          </button>
+        ))}
       </div>
+      <button className="md:hidden fixed right-4 bottom-[calc(72px+env(safe-area-inset-bottom))] z-20 btn btn-coral h-14 rounded-full pl-4 pr-5 text-[16px] shadow-[0_8px_24px_rgba(255,90,61,.45)]" onClick={() => open({ type: 'sell' })}><Camera className="w-5 h-5" />Sell</button>
       {section === 'browse' && <Feed open={open} />}
       {section === 'mine' && <MyListings open={open} />}
       {section === 'deals' && <Deals open={open} />}
@@ -58,13 +57,13 @@ export default function Secondhand() {
 function ListingCard({ l, onOpen, showStatus }) {
   const { users } = useStore();
   return (
-    <button onClick={onOpen} className="card p-2.5 text-left flex flex-col hover:border-[#3B2FD9] transition">
+    <button onClick={onOpen} className="card p-2 text-left flex flex-col md:hover:border-[#3B2FD9] active:bg-[#FAFAFE] transition">
       <div className="relative">
         <Photo src={l.photo} className="w-full aspect-[4/3] rounded-[12px]" />
         {l.aiWritten && <span className="absolute top-2 left-2 chip bg-white/95 text-[#3B2FD9] text-[10px]"><Sparkles className="w-3 h-3" />AI-written</span>}
         {showStatus && l.status !== 'active' && <span className="absolute top-2 right-2 chip bg-[#111322] text-white text-[10px] capitalize">{l.status}</span>}
       </div>
-      <div className="font-bold mt-2">{rupees(l.price)}</div>
+      <div className="font-extrabold text-[16px] mt-2">{rupees(l.price)}</div>
       <div className="text-[13px] font-semibold leading-snug line-clamp-2 min-h-[36px]">{l.title}</div>
       <div className="flex items-center gap-1.5 mt-1.5 flex-wrap"><Cond c={l.condition} /><span className="chip bg-[#F1F1F4] text-[#4E5369] text-[10px]">{l.mode === 'ship' ? <><Truck className="w-3 h-3" />Ships</> : <><Handshake className="w-3 h-3" />Meet</>}</span></div>
       <div className="text-[11px] text-[#7C8199] mt-1.5 flex items-center gap-1"><MapPin className="w-3 h-3" />{l.area} · {timeAgo(l.createdAt)} · {person(l.sellerId, users).name.split(' ')[0]}</div>
@@ -79,17 +78,17 @@ function Feed({ open }) {
   const list = listings.filter((l) => l.status === 'active' && l.sellerId !== me.id && (cat === 'all' || l.category === cat) && l.title.toLowerCase().includes(q.toLowerCase()));
   return (
     <>
-      <div className="card p-4 bg-[#EEF0FF] border-[#D6DAFF] flex gap-3 items-center">
+      <div className="rounded-[16px] p-3.5 bg-[#EEF0FF] flex gap-3 items-center">
         <ShieldCheck className="w-6 h-6 text-[#3B2FD9] shrink-0" />
-        <div className="text-[13px] text-[#2E23B8]"><b>Secondhand from your neighbours.</b> Meet in person and pay cash or in the app, or get it shipped with payment held until you receive it.</div>
+        <div className="text-[13px] leading-snug text-[#2E23B8]"><b>Meet and check before you pay,</b> or get it shipped with payment held until you receive it.</div>
       </div>
       <div className="relative">
-        <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7C8199]" />
-        <input className="input pl-10 h-12" placeholder="Search study table, cycle, cooler…" value={q} onChange={(e) => setQ(e.target.value)} />
+        <Search className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7C8199]" />
+        <input className="input pl-11 rounded-[14px]" type="search" enterKeyHint="search" placeholder="Search study table, cycle, cooler…" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search secondhand items" />
       </div>
-      <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4">
+      <div className="rail">
         {[{ id: 'all', name: 'All' }, ...SH_CATEGORIES].map((c) => (
-          <button key={c.id} onClick={() => setCat(c.id)} className={`chip h-9 px-4 text-[13px] whitespace-nowrap ${cat === c.id ? 'bg-[#3B2FD9] text-white' : 'bg-white border border-[#E8EAF2]'}`}>{c.name}</button>
+          <button key={c.id} className="pill" aria-pressed={cat === c.id} onClick={() => setCat(c.id)}>{c.name}</button>
         ))}
       </div>
       <div className="text-[13px] text-[#4E5369] -mb-1">{list.length} items near {me.area}</div>
@@ -108,15 +107,15 @@ function ListingDetail({ id, onBack, open, goDeals }) {
   const myDeal = deals.find((d) => d.listingId === id && d.buyerId === me.id && d.status !== 'cancelled');
   const buyShip = () => { setPaying(true); setTimeout(() => { startDeal(id, 'app'); setPaying(false); goDeals(); }, 1300); };
   return (
-    <div className="grid gap-4">
-      <button onClick={onBack} className="flex items-center gap-1 text-[13px] font-semibold text-[#4E5369] w-fit"><ArrowLeft className="w-4 h-4" /> Back</button>
-      <div className="grid md:grid-cols-2 gap-5">
-        <Photo src={l.photo} className="w-full aspect-[4/3] rounded-[16px]" />
+    <div>
+      <TopBar title={mine ? 'Your listing' : seller.name} onBack={onBack} />
+      <div className="grid md:grid-cols-2 gap-4 md:gap-6">
+        <div className="-mx-4 -mt-3 md:m-0"><Photo src={l.photo} className="w-full aspect-[4/3] md:rounded-[16px]" /></div>
         <div className="grid gap-3 content-start">
           <div className="flex items-center gap-2 flex-wrap"><Cond c={l.condition} />{l.aiWritten && <span className="chip bg-[#EEF0FF] text-[#3B2FD9]"><Sparkles className="w-3 h-3" />Written with AI, checked by seller</span>}</div>
           <h1 className="text-[22px] font-extrabold leading-tight">{l.title}</h1>
           <div className="text-[26px] font-extrabold">{rupees(l.price)}</div>
-          <p className="text-[14px] text-[#4E5369]">{l.desc}</p>
+          <p className="text-[15px] leading-relaxed text-[#4E5369]">{l.desc}</p>
           {l.facts?.length > 0 && (
             <div className="card p-3"><div className="text-[12px] font-semibold text-[#7C8199] mb-1">Confirmed by seller</div>
               {l.facts.map((f) => <div key={f} className="text-[13px] flex gap-2 items-center py-0.5"><Check className="w-3.5 h-3.5 text-[#157F3E]" />{f}</div>)}</div>
@@ -129,22 +128,23 @@ function ListingDetail({ id, onBack, open, goDeals }) {
             {l.mode === 'ship' ? <><Truck className="w-4 h-4 mt-0.5 shrink-0 text-[#3B2FD9]" />Ships to you. You pay online; the seller is paid only after you mark it received.</> : <><Handshake className="w-4 h-4 mt-0.5 shrink-0 text-[#3B2FD9]" />Meet in person, check the item, then pay cash or in the app.</>}
           </div>
           {mine ? (
-            <div className="flex gap-2">
-              {l.status === 'active' && <button className="btn btn-ghost flex-1" onClick={() => updateListing(id, { status: 'hidden' })}>Hide listing</button>}
-              {l.status === 'hidden' && <button className="btn btn-ghost flex-1" onClick={() => updateListing(id, { status: 'active' })}>Show listing</button>}
-              {l.status !== 'sold' && <button className="btn btn-primary flex-1" onClick={() => updateListing(id, { status: 'sold' })}>Mark as sold</button>}
-            </div>
+            <ActionBar>
+              {l.status === 'active' && <button className="btn btn-ghost flex-1 h-12" onClick={() => updateListing(id, { status: 'hidden' })}>Hide listing</button>}
+              {l.status === 'hidden' && <button className="btn btn-ghost flex-1 h-12" onClick={() => updateListing(id, { status: 'active' })}>Show listing</button>}
+              {l.status !== 'sold' && <button className="btn btn-primary flex-1 h-12" onClick={() => updateListing(id, { status: 'sold' })}>Mark as sold</button>}
+              {l.status === 'sold' && <button className="btn btn-ghost flex-1 h-12" disabled>Sold</button>}
+            </ActionBar>
           ) : myDeal ? (
-            <button className="btn btn-primary h-12" onClick={goDeals}>View your deal</button>
+            <ActionBar><button className="btn btn-primary flex-1 h-12" onClick={goDeals}>View your deal</button></ActionBar>
           ) : l.status !== 'active' ? (
-            <div className="chip bg-[#F1F1F4] text-[#4E5369] w-fit">This item is {l.status}</div>
+            <ActionBar><button className="btn btn-ghost flex-1 h-12 capitalize" disabled>This item is {l.status}</button></ActionBar>
           ) : (
-            <div className="flex gap-2">
+            <ActionBar note={l.mode === 'ship' ? 'Payment is held until you mark the item received' : 'No payment until you’ve seen the item'}>
               <button className="btn btn-ghost h-12" onClick={() => open({ type: 'chat', id, otherId: l.sellerId })}><MessageCircle className="w-4 h-4" />Message</button>
               {l.mode === 'ship'
                 ? <button className="btn btn-primary h-12 flex-1" disabled={paying} onClick={buyShip}>{paying ? <><Loader2 className="w-4 h-4 animate-spin" />Processing…</> : `Buy & pay ${rupees(l.price)}`}</button>
                 : <button className="btn btn-primary h-12 flex-1" onClick={() => { startDeal(id, 'cash'); goDeals(); }}>Request to buy</button>}
-            </div>
+            </ActionBar>
           )}
         </div>
       </div>
@@ -182,15 +182,14 @@ function SellFlow({ onDone, onBack }) {
   const price = Number(draft?.price || 0);
 
   return (
-    <div className="card p-5 grid gap-4 max-w-xl">
-      <div className="flex items-center justify-between">
-        <button onClick={step === 1 ? onBack : () => setStep(step === 4 ? 3 : step === 5 ? 4 : 1)} className="flex items-center gap-1 text-[13px] font-semibold text-[#4E5369]"><ArrowLeft className="w-4 h-4" />Back</button>
-        <span className="text-[12px] font-semibold text-[#7C8199]">Step {{ 1: 1, 2: 2, 3: 2, 4: 3, 5: 4 }[step]} of 4</span>
-      </div>
+    <div className="grid gap-4 max-w-xl md:card md:p-5">
+      <TopBar title="Sell an item" onBack={step === 1 ? onBack : () => { setErr(''); setStep(step === 4 ? 3 : step === 5 ? 4 : 1); }} right={<span className="text-[13px] font-semibold text-[#7C8199] pr-3">Step {{ 1: 1, 2: 2, 3: 2, 4: 3, 5: 4 }[step]} of 4</span>} />
+      <div className="flex gap-1.5 -mt-2" aria-hidden="true">{[1, 2, 3, 4].map((n) => <span key={n} className={`h-1.5 flex-1 rounded-full ${n <= { 1: 1, 2: 2, 3: 2, 4: 3, 5: 4 }[step] ? 'bg-[#FF5A3D]' : 'bg-[#E8EAF2]'}`} />)}</div>
       {step === 1 && (
         <>
-          <h1 className="text-[20px] font-extrabold">Snap your item</h1>
-          <div className="flex gap-2 flex-wrap">{SH_CATEGORIES.map((c) => <button key={c.id} onClick={() => { setCat(c.id); setPhotos(0); }} className={`chip h-9 px-3 text-[13px] ${cat === c.id ? 'bg-[#3B2FD9] text-white' : 'bg-white border border-[#E8EAF2]'}`}>{c.name}</button>)}</div>
+          <h1 className="text-[24px] font-extrabold tracking-tight">Snap your item</h1>
+          <p className="text-[14px] text-[#4E5369] -mt-2">Pick a category and add up to 3 photos. AI writes the rest.</p>
+          <div className="flex gap-2 flex-wrap">{SH_CATEGORIES.map((c) => <button key={c.id} onClick={() => { setCat(c.id); setPhotos(0); }} className="pill" aria-pressed={cat === c.id}>{c.name}</button>)}</div>
           <div className="grid grid-cols-3 gap-2">
             {[0, 1, 2].map((i) => i < photos
               ? <Photo key={i} src={t.photo} className="aspect-square rounded-[12px]" />
@@ -198,7 +197,7 @@ function SellFlow({ onDone, onBack }) {
           </div>
           <div className="text-[12px] text-[#7C8199]">Tips: good daylight, show any scratches, include the brand label.</div>
           {err && <div className="text-[13px] text-[#C2410C]">{err}</div>}
-          <button className="btn btn-coral h-12" onClick={analyse}><Sparkles className="w-4 h-4" />Continue</button>
+          <ActionBar><button className="btn btn-coral flex-1 h-12" onClick={analyse}><Sparkles className="w-4 h-4" />Continue</button></ActionBar>
         </>
       )}
       {step === 2 && <div className="py-10 flex flex-col items-center gap-3 text-[#3B2FD9]"><Loader2 className="w-8 h-8 animate-spin" /><div className="font-semibold">Reading your photos…</div><div className="text-[12px] text-[#7C8199]">Identifying the item and checking for defects</div></div>}
@@ -207,28 +206,28 @@ function SellFlow({ onDone, onBack }) {
           <div className="p-3 rounded-[12px] bg-[#EEF0FF] text-[#2E23B8] text-[14px] flex gap-2 items-center"><Sparkles className="w-4 h-4" />Looks like: <b>{t.guess}</b></div>
           {AI_QUESTIONS.map((q) => (
             <div key={q.id}><div className="text-[14px] font-semibold mb-1.5">{q.q}</div>
-              <div className="flex flex-wrap gap-2">{q.options.map((o) => <button key={o} onClick={() => { setAnswers({ ...answers, [q.id]: o }); setErr(''); }} className={`chip h-9 px-3 text-[13px] ${answers[q.id] === o ? 'bg-[#3B2FD9] text-white' : 'bg-white border border-[#E8EAF2]'}`}>{o}</button>)}</div></div>
+              <div className="flex flex-wrap gap-2">{q.options.map((o) => <button key={o} onClick={() => { setAnswers({ ...answers, [q.id]: o }); setErr(''); }} className="pill" aria-pressed={answers[q.id] === o}>{o}</button>)}</div></div>
           ))}
           {err && <div className="text-[13px] text-[#C2410C]">{err}</div>}
-          <button className="btn btn-primary h-12" onClick={write}><Sparkles className="w-4 h-4" />Write my listing</button>
+          <ActionBar><button className="btn btn-primary flex-1 h-12" onClick={write}><Sparkles className="w-4 h-4" />Write my listing</button></ActionBar>
         </>
       )}
       {step === 4 && draft && (
         <>
-          <h1 className="text-[20px] font-extrabold">Review your listing</h1>
+          <h1 className="text-[24px] font-extrabold tracking-tight">Review your listing</h1>
           <span className="chip bg-[#EEF0FF] text-[#3B2FD9] w-fit"><Sparkles className="w-3 h-3" />Written with AI, edit anything</span>
-          <label className="text-[13px] font-semibold">Title<input className="input mt-1" value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} /></label>
-          <label className="text-[13px] font-semibold">Description<textarea className="input mt-1 h-24 py-2" value={draft.desc} onChange={(e) => setDraft({ ...draft, desc: e.target.value })} /></label>
-          <div><div className="text-[13px] font-semibold mb-1.5">Condition</div><div className="flex gap-2 flex-wrap">{Object.entries(CONDITIONS).map(([k, v]) => <button key={k} onClick={() => setDraft({ ...draft, condition: k })} className={`chip h-9 px-3 text-[13px] ${draft.condition === k ? 'bg-[#3B2FD9] text-white' : 'bg-white border border-[#E8EAF2]'}`}>{v.label}</button>)}</div></div>
-          <label className="text-[13px] font-semibold">Price (₹)<input className="input mt-1" inputMode="numeric" value={draft.price} onChange={(e) => setDraft({ ...draft, price: e.target.value })} /></label>
+          <label className="grid gap-1.5 text-[14px] font-semibold">Title<input className="input" value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} /></label>
+          <label className="grid gap-1.5 text-[14px] font-semibold">Description<textarea className="input h-28 py-3 leading-relaxed" value={draft.desc} onChange={(e) => setDraft({ ...draft, desc: e.target.value })} /></label>
+          <div><div className="text-[13px] font-semibold mb-1.5">Condition</div><div className="flex gap-2 flex-wrap">{Object.entries(CONDITIONS).map(([k, v]) => <button key={k} onClick={() => setDraft({ ...draft, condition: k })} className="pill" aria-pressed={draft.condition === k}>{v.label}</button>)}</div></div>
+          <label className="grid gap-1.5 text-[14px] font-semibold">Price (₹)<input className="input" inputMode="numeric" value={draft.price} onChange={(e) => setDraft({ ...draft, price: e.target.value })} /></label>
           <div className="text-[12px] text-[#157F3E] -mt-2">Similar items sell for {rupees(t.low)}–{rupees(t.high)} nearby</div>
           {err && <div className="text-[13px] text-[#C2410C]">{err}</div>}
-          <button className="btn btn-primary h-12" onClick={() => { setErr(''); setStep(5); }}>Next: how to sell</button>
+          <ActionBar><button className="btn btn-primary flex-1 h-12" onClick={() => { setErr(''); setStep(5); }}>Next: how to sell</button></ActionBar>
         </>
       )}
       {step === 5 && (
         <>
-          <h1 className="text-[20px] font-extrabold">How do you want to sell?</h1>
+          <h1 className="text-[24px] font-extrabold tracking-tight">How do you want to sell?</h1>
           {[['meet', Handshake, 'Meet in person', 'Buyer checks the item, then pays cash or in the app. Best for big or expensive items.'], ['ship', Truck, 'Ship it', 'Buyer pays online first. Ship within 48 hours; you get paid when they mark it received.']].map(([id, Icon, title, body]) => (
             <button key={id} onClick={() => setMode(id)} className={`text-left p-4 rounded-[14px] border flex gap-3 ${mode === id ? 'border-[#3B2FD9] bg-[#F8F8FF]' : 'border-[#E8EAF2]'}`}>
               <Icon className="w-5 h-5 text-[#3B2FD9] shrink-0 mt-0.5" /><div><div className="font-bold">{title}</div><div className="text-[13px] text-[#4E5369]">{body}</div></div>
@@ -238,7 +237,7 @@ function SellFlow({ onDone, onBack }) {
             {mode === 'meet' && <div className="flex justify-between"><span>If paid in cash</span><b>{rupees(price)}</b></div>}
             <div className="flex justify-between"><span>If paid in the app (after {SH_COMMISSION_RATE * 100}% fee)</span><b>{rupees(price * (1 - SH_COMMISSION_RATE))}</b></div>
           </div>
-          <button className="btn btn-coral h-12" onClick={publish}><Tag className="w-4 h-4" />Publish listing</button>
+          <ActionBar><button className="btn btn-coral flex-1 h-12" onClick={publish}><Tag className="w-4 h-4" />Publish listing</button></ActionBar>
         </>
       )}
     </div>
@@ -329,7 +328,7 @@ function Deals({ open }) {
   const list = deals.filter((d) => (side === 'buying' ? d.buyerId === me.id : d.sellerId === me.id));
   return (
     <div className="grid gap-3">
-      <div className="flex gap-2">{[['buying', 'Buying'], ['selling', 'Selling']].map(([id, l]) => <button key={id} onClick={() => setSide(id)} className={`chip h-9 px-4 text-[13px] ${side === id ? 'bg-[#3B2FD9] text-white' : 'bg-white border border-[#E8EAF2]'}`}>{l} ({deals.filter((d) => (id === 'buying' ? d.buyerId === me.id : d.sellerId === me.id)).length})</button>)}</div>
+      <div className="flex gap-2">{[['buying', 'Buying'], ['selling', 'Selling']].map(([id, l]) => <button key={id} onClick={() => setSide(id)} className="pill" aria-pressed={side === id}>{l} ({deals.filter((d) => (id === 'buying' ? d.buyerId === me.id : d.sellerId === me.id)).length})</button>)}</div>
       {list.length === 0 ? <Empty icon={Handshake} title={side === 'buying' ? 'No purchases yet' : 'No buyers yet'} body={side === 'buying' ? 'Request to buy an item and it will show here.' : 'When someone wants your item, the request shows here.'} />
         : list.map((d) => <DealCard key={d.id} d={d} open={open} />)}
     </div>
@@ -344,13 +343,13 @@ function Chat({ listingId, otherId, onBack }) {
   const thread = messages.filter((m) => m.listingId === listingId && ((m.fromId === me.id && m.toId === otherId) || (m.fromId === otherId && m.toId === me.id)));
   const send = (t) => { if (!t.trim()) return; sendMessage(listingId, otherId, t.trim()); setText(''); };
   return (
-    <div className="card overflow-hidden max-w-2xl flex flex-col min-h-[70vh]">
-      <div className="p-3 border-b border-[#E8EAF2] flex items-center gap-3">
-        <button onClick={onBack} aria-label="Back"><ArrowLeft className="w-5 h-5" /></button>
+    <div className="max-w-2xl md:card md:overflow-hidden flex flex-col">
+      <TopBar title={other.name} onBack={onBack} />
+      <div className="p-3 -mt-3 -mx-4 md:m-0 bg-white border-b border-[#EDEEF4] flex items-center gap-3">
         <Photo src={l?.photo} className="w-11 h-11 rounded-[10px]" />
         <div className="min-w-0 flex-1"><div className="font-bold truncate">{other.name}</div><div className="text-[12px] text-[#7C8199] truncate">{l?.title} · {rupees(l?.price || 0)}</div></div>
       </div>
-      <div className="flex-1 p-4 grid gap-2 content-start bg-[#FAFAFC]">
+      <div className="flex-1 p-4 -mx-4 md:mx-0 grid gap-2 content-start bg-[#FAFAFC] min-h-[60dvh] pb-40 md:pb-4">
         <div className="text-center text-[11px] text-[#7C8199]">Phone numbers stay hidden. Keep the chat on SnapSell.</div>
         {thread.length === 0 && <div className="text-center text-[13px] text-[#7C8199] mt-6">Say hi and ask anything about the item.</div>}
         {thread.map((m) => (
@@ -359,10 +358,10 @@ function Chat({ listingId, otherId, onBack }) {
           </div>
         ))}
       </div>
-      <div className="p-3 border-t border-[#E8EAF2] grid gap-2">
-        <div className="flex gap-2 overflow-x-auto">{['Is it still available?', 'Can we meet at 6 pm?', `Would you take ${rupees(Math.round((l?.price || 0) * 0.9 / 50) * 50)}?`].map((q) => <button key={q} onClick={() => send(q)} className="chip h-8 px-3 bg-white border border-[#E8EAF2] whitespace-nowrap">{q}</button>)}</div>
+      <div className="max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:z-30 bg-white/95 backdrop-blur-md border-t border-[#EDEEF4] p-3 pb-[max(12px,env(safe-area-inset-bottom))] grid gap-2">
+        <div className="flex gap-2 overflow-x-auto -mx-3 px-3" style={{ scrollbarWidth: 'none' }}>{['Is it still available?', 'Can we meet at 6 pm?', `Would you take ${rupees(Math.round((l?.price || 0) * 0.9 / 50) * 50)}?`].map((q) => <button key={q} onClick={() => send(q)} className="pill h-9 text-[13px]">{q}</button>)}</div>
         <div className="flex gap-2"><input className="input" placeholder={`Message ${other.name.split(' ')[0]}…`} value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && send(text)} />
-          <button className="btn btn-primary w-12 px-0" onClick={() => send(text)} aria-label="Send"><Send className="w-4 h-4" /></button></div>
+          <button className="btn btn-primary w-12 h-12 px-0 rounded-full shrink-0" onClick={() => send(text)} aria-label="Send"><Send className="w-4 h-4" /></button></div>
       </div>
     </div>
   );

@@ -131,8 +131,14 @@ export function StoreProvider({ children }) {
     createListing: (listing) =>
       setS((p) => ({ ...p, listings: [{ ...listing, id: 'L-' + Date.now(), sellerId: p.session.userId, status: 'active', createdAt: new Date().toISOString() }, ...p.listings] })),
     updateListing: (id, patch) => setS((p) => ({ ...p, listings: p.listings.map((l) => (l.id === id ? { ...l, ...patch } : l)) })),
-    sendMessage: (listingId, toId, text) =>
-      setS((p) => ({ ...p, messages: [...p.messages, { id: 'M-' + Date.now() + Math.random(), listingId, fromId: p.session.userId, toId, text, createdAt: new Date().toISOString() }] })),
+    sendMessage: (listingId, toId, text) => {
+      setS((p) => ({ ...p, messages: [...p.messages, { id: 'M-' + Date.now() + Math.random(), listingId, fromId: p.session.userId, toId, text, createdAt: new Date().toISOString() }] }));
+      // Mock neighbours (u-p*) reply so the chat can be demoed solo.
+      if (toId.startsWith('u-p')) {
+        const reply = /available/i.test(text) ? 'Yes, still available!' : /meet|pm|time/i.test(text) ? 'Works for me. See you near the main gate.' : /take|₹|price/i.test(text) ? 'I can do a little less if you pick it up today.' : 'Sure, ask me anything about it.';
+        setTimeout(() => setS((p) => ({ ...p, messages: [...p.messages, { id: 'M-' + Date.now() + Math.random(), listingId, fromId: toId, toId: p.session?.userId, text: reply, createdAt: new Date().toISOString() }] })), 1500);
+      }
+    },
     // Buyer starts a deal. Mock sellers (not demo accounts) respond automatically so the flow can be demoed alone.
     startDeal: (listingId, payment) => {
       const id = 'D-' + Date.now();

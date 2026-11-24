@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { IndianRupee, LayoutDashboard, Recycle, ShoppingBag, Store, TrendingUp, Users } from 'lucide-react';
 import { COMMISSION_RATE, SH_COMMISSION_RATE, orderCommission, orderSubtotal, rupees } from './data';
 import { useStore } from './store';
-import { BottomNav, CategoryIcon, Header, Page, StatusChip, timeAgo } from './ui';
+import { BottomNav, CategoryIcon, Header, Page, ScreenTitle, StatusChip, timeAgo } from './ui';
 
 export default function Admin() {
   const [tab, setTab] = useState('overview');
@@ -10,12 +10,12 @@ export default function Admin() {
   const pending = brands.filter((b) => b.status === 'pending').length;
   return (
     <>
-      <Header sub="Admin console" right={<button className="btn btn-ghost h-9 text-[12px]" onClick={resetDemo}>Reset demo data</button>} />
+      <Header sub="Admin console" right={<button className="btn btn-ghost h-10 min-h-0 px-3 text-[13px]" onClick={resetDemo}><span className="md:hidden">Reset</span><span className="max-md:hidden">Reset demo data</span></button>} />
       <BottomNav active={tab} onChange={setTab} tabs={[
         { id: 'overview', label: 'Overview', icon: LayoutDashboard },
         { id: 'sellers', label: 'Sellers', icon: Store, badge: pending },
         { id: 'orders', label: 'Orders', icon: ShoppingBag },
-        { id: 'listings', label: 'Secondhand', icon: Recycle },
+        { id: 'listings', label: 'Listings', icon: Recycle },
       ]} />
       <Page>
         {tab === 'overview' && <Overview />}
@@ -42,7 +42,8 @@ function Overview() {
   ];
   return (
     <div className="grid gap-5">
-      <h1 className="text-[22px] font-extrabold">Marketplace overview</h1>
+      <ScreenTitle sub="Local brands and secondhand, all areas">Overview</ScreenTitle>
+      <h2 className="text-[17px] font-bold -mb-2">Local brands</h2>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {tiles.map(([l, v, Icon]) => (
           <div key={l} className="card p-4"><div className="flex items-center justify-between text-[12px] font-semibold text-[#7C8199]">{l}<Icon className="w-4 h-4" /></div><div className="text-[22px] font-extrabold mt-1 tabular-nums">{v}</div></div>
@@ -77,7 +78,7 @@ function Sellers() {
   const { brands, products, updateBrand } = useStore();
   return (
     <div className="grid gap-3">
-      <h1 className="text-[22px] font-extrabold">Sellers</h1>
+      <ScreenTitle sub="Approve new brands before shoppers see them">Sellers</ScreenTitle>
       {brands.map((b) => (
         <div key={b.id} className="card p-4 flex flex-wrap items-center gap-3">
           <CategoryIcon category={b.category} size="sm" />
@@ -96,8 +97,16 @@ function AllOrders() {
   const { orders, brands } = useStore();
   return (
     <div className="grid gap-3">
-      <h1 className="text-[22px] font-extrabold">All orders</h1>
-      <div className="card overflow-x-auto">
+      <ScreenTitle sub={`${orders.length} orders across all brands`}>Orders</ScreenTitle>
+      <div className="grid gap-2 md:hidden">
+        {orders.map((o) => (
+          <article key={o.id} className="card p-3.5 grid gap-1">
+            <div className="flex items-start justify-between gap-2"><div className="min-w-0"><div className="font-bold truncate">{brands.find((b) => b.id === o.brandId)?.name}</div><div className="text-[12px] text-[#7C8199]">{o.id} · {o.buyerName} · {timeAgo(o.createdAt)}</div></div><StatusChip status={o.status} /></div>
+            <div className="flex justify-between text-[14px] pt-1"><span>{rupees(orderSubtotal(o))}</span><span className="text-[#4E5369]">Commission {o.status === 'cancelled' ? '—' : rupees(orderCommission(o))}</span></div>
+          </article>
+        ))}
+      </div>
+      <div className="card overflow-x-auto max-md:hidden">
         <table className="w-full text-[13px] min-w-[640px]">
           <thead><tr className="text-left text-[#7C8199] border-b border-[#E8EAF2]">{['Order', 'Seller', 'Buyer', 'Amount', 'Commission', 'Status'].map((h) => <th key={h} className="p-3 font-semibold">{h}</th>)}</tr></thead>
           <tbody>
@@ -122,14 +131,19 @@ function Listings() {
   const { listings, updateListing } = useStore();
   return (
     <div className="grid gap-3">
-      <h1 className="text-[22px] font-extrabold">Secondhand listings</h1>
+      <ScreenTitle sub="Hide anything that breaks the rules">Secondhand listings</ScreenTitle>
       {listings.map((l) => (
-        <div key={l.id} className="card p-3 flex items-center gap-3">
-          <img src={l.photo} alt="" className="w-14 h-14 rounded-[10px] object-cover bg-[#EEF0FF]" />
-          <div className="flex-1 min-w-0"><div className="font-semibold truncate">{l.title}</div><div className="text-[12px] text-[#7C8199]">{rupees(l.price)} · {l.area} · {l.mode === 'ship' ? 'Ships' : 'Meet'} · {timeAgo(l.createdAt)}</div></div>
-          <span className="chip bg-[#F1F1F4] text-[#4E5369] capitalize">{l.status}</span>
-          {l.status === 'active' && <button className="btn btn-ghost h-9" onClick={() => updateListing(l.id, { status: 'hidden' })}>Hide</button>}
-          {l.status === 'hidden' && <button className="btn btn-ghost h-9" onClick={() => updateListing(l.id, { status: 'active' })}>Restore</button>}
+        <div key={l.id} className="card p-3 flex gap-3">
+          <img src={l.photo} alt="" className="w-16 h-16 rounded-[12px] object-cover bg-[#EEF0FF] shrink-0" />
+          <div className="flex-1 min-w-0 grid gap-1">
+            <div className="font-semibold leading-snug line-clamp-2">{l.title}</div>
+            <div className="text-[12px] text-[#7C8199]">{rupees(l.price)} · {l.area} · {l.mode === 'ship' ? 'Ships' : 'Meet'} · {timeAgo(l.createdAt)}</div>
+            <div className="flex items-center justify-between gap-2 mt-1">
+              <span className="chip bg-[#F1F1F4] text-[#4E5369] capitalize">{l.status}</span>
+              {l.status === 'active' && <button className="btn btn-ghost h-10 min-h-0" onClick={() => updateListing(l.id, { status: 'hidden' })}>Hide</button>}
+              {l.status === 'hidden' && <button className="btn btn-ghost h-10 min-h-0" onClick={() => updateListing(l.id, { status: 'active' })}>Restore</button>}
+            </div>
+          </div>
         </div>
       ))}
     </div>
