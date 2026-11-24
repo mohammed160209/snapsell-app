@@ -52,7 +52,8 @@ Repo: `https://github.com/mohammed160209/snapsell-app` · Live: `https://snapsel
 |---|---|---|---|
 | UI framework | React 19 + Vite 6 | same | Already built, fast dev |
 | Styling | Tailwind CSS 4 (`@tailwindcss/vite`) + small utility classes in `src/index.css` (`.card .btn .input .chip`) | same | Consistent design system, no extra deps |
-| Icons | `lucide-react` | same | Already used everywhere |
+| Icons | Hugeicons (`@hugeicons/react`, free set) via `src/icons.jsx` | same | Consistent modern stroke set; one file to swap glyphs |
+| Motion | `motion` (Framer Motion) | same | Native-feeling transitions, sheets, indicators |
 | State | React Context + `useState`, persisted to `localStorage` key `snapsell-local-v1` (`src/store.jsx`) | TanStack Query over Supabase client; keep Context only for session + cart | Mock now, server data later |
 | Routing | Role-based switch + tab state (no URL routes) | `react-router` 7 with routes per screen | Deep links for shared listings |
 | Database | Mock arrays in `src/data.js` | **Supabase Postgres** | Free tier, auth + storage + realtime in one account |
@@ -64,6 +65,31 @@ Repo: `https://github.com/mohammed160209/snapsell-app` · Live: `https://snapsel
 | Hosting | Cloudflare Workers static assets (`wrangler deploy --assets dist --name snapsell-local`) | same, plus Supabase for API | Already working |
 
 Brand tokens (keep consistent): indigo `#3B2FD9` (primary, trust, buy), coral `#FF5A3D` (sell / publish only), green `#157F3E` on `#E7F7EE` (verified, condition, completed), ink `#111322`, secondary `#4E5369`, muted `#7C8199`, line `#E8EAF2`, canvas `#F7F7FA`. Font Inter. Cards radius 16 px, buttons 12 px. Mobile-first; bottom nav on phones, pill nav on desktop (`md:` breakpoint).
+
+
+### 3.1 Mobile UI rules (phones < 768 px — the main layout)
+
+The app must feel like a native app on phones, not a shrunk website. Shared building blocks live in `src/ui.jsx`; use them instead of hand-rolling layout.
+
+| Rule | How it's done |
+|---|---|
+| Root tabs = brand bar on top + tab bar at the bottom | `Header` + `BottomNav` (58 px, safe-area padding, active pill, badges) |
+| Detail / form / chat / sell-flow screens are *pushed*: back chevron, no tab bar | `TopBar` (calls `usePushed()`, which hides `Header` and `BottomNav` on phones) |
+| Primary action pinned in the thumb zone | `ActionBar` (fixed bottom on phones, inline on desktop; `aboveTabs` when the tab bar is visible, e.g. Cart) |
+| Secondary choices and confirmations in bottom sheets | `Sheet` + `SheetRow` (centred dialog on desktop; Esc and backdrop close) |
+| Create actions as a floating coral button above the tab bar | Secondhand "Sell", Business "Add product" (desktop shows a normal button in the title row) |
+| Section switches as segmented controls | 3-way grey track with white selected segment (Secondhand sections, Business order filters, Delivery/Pickup) |
+| Filters as horizontal rails | `.rail` + `.pill[aria-pressed]` — rails bleed to the screen edge, never cause page overflow |
+| Large screen titles | `ScreenTitle` (26 px on phones) |
+| Touch targets ≥ 44 px | `.btn`, `.icon-btn`, `Stepper`, sheet rows (56 px) |
+| Inputs 16 px on phones | `.input` (prevents iOS Safari zoom on focus); `inputMode`, `autoComplete`, `enterKeyHint` set |
+| Safe areas and dynamic viewport | `viewport-fit=cover` in `index.html`, `.pt-safe`/`.pb-safe`, `100dvh` |
+| No horizontal page scroll | single-column grids use `minmax(0,1fr)` (base layer in `index.css`); images `max-width:100%` |
+| Motion | sheets slide up 280 ms with an ease-out curve; buttons scale to 0.97 on press; all disabled under `prefers-reduced-motion` |
+
+Desktop (≥ 768 px) keeps the web layout: header with name, pill navigation, two-column detail pages, inline actions.
+
+User-flow boards built from real screenshots are in `docs/flows/` (regenerate with `scripts/capture-screens.mjs` + `scripts/build-flows.mjs`). Visual direction, tokens and per-screen inspiration: `docs/DESIGN.md`.
 
 ---
 
@@ -79,7 +105,7 @@ snapsell-app/
     index.css           Tailwind import + .card .btn .input .chip
     data.js             ALL mock data + constants + money helpers (single source of truth)
     store.jsx           Context store: state, persistence, every action
-    ui.jsx              shared components: Logo, Header, BottomNav, Page, Empty, CategoryIcon, StatusChip, timeAgo
+    ui.jsx              shared components: ChromeProvider/usePushed, Header, TopBar, BottomNav, ActionBar, Sheet, SheetRow, ScreenTitle, Stepper, Page, Empty, CategoryIcon, StatusChip, timeAgo
     Onboarding.jsx      welcome, role choice, phone/OTP/profile
     Buyer.jsx           P1 shopper app (Shop, BrandStore, ProductDetail, Cart, Orders)
     Seller.jsx          P1 business app (Dashboard, SellerOrders, Products, ProductForm, StoreSettings)
