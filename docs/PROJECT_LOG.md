@@ -83,7 +83,7 @@
 
 ### 24 Nov — Mobile-first redesign, then premium redesign
 - `7657184` **Mobile app shell:** pushed screens with back bar and hidden tab bar, pinned bottom action bars, bottom sheets (demo accounts, cancel/decline/delete confirms, product ⋯ menu), 44 px targets, 16 px inputs, safe areas, grid overflow fix, admin orders as cards, mock chat replies.
-- `8f4c802` **Premium redesign:** Apple-style neutrals, borderless cards, glass bars, 20 px gutters; Motion (screen transitions, sliding tab/segment indicators, spring sheets with drag-to-dismiss, staggered lists, OTP boxes, success screens, AI scanning step, animated trackers); Hugeicons everywhere + section icons; featured cards; secondhand back-stack fix. Added `scripts/capture-screens.mjs` (Playwright, 52 screens) and `scripts/build-flows.mjs` (7 flow boards as SVG + PNG), `docs/DESIGN.md`, `docs/flows/README.md`.
+- `8f4c802` **Premium redesign:** Apple-style neutrals, borderless cards, glass bars, 20 px gutters; Motion (screen transitions, sliding tab/segment indicators, spring sheets with drag-to-dismiss, staggered lists, OTP boxes, success screens, AI scanning step, animated trackers); Hugeicons everywhere + section icons; featured cards; secondhand back-stack fix. Added `scripts/capture-screens.mjs` (Playwright, 52 screens) and `scripts/build-flows.mjs` (7 flow boards as SVG), `docs/DESIGN.md`, `docs/flows/README.md`.
 
 ### 25 Nov — This log (`docs/PROJECT_LOG.md`) and `CLAUDE.md` context files.
 
@@ -119,7 +119,7 @@ src/Seller.jsx        Business app: Dashboard, SellerOrders, Products (+⋯ shee
 src/Admin.jsx         Overview, Sellers, AllOrders (cards on phone, table on desktop), Listings
 public/images/        10 compressed photos used by secondhand listings and the welcome collage
 scripts/capture-screens.mjs   Playwright: drives the running app, saves 52 screenshots → docs/flows/screens/
-scripts/build-flows.mjs       Builds 7 flow boards (SVG with embedded JPEG screens + PNG) → docs/flows/
+scripts/build-flows.mjs       Builds 7 flow boards (SVG only, with embedded JPEG screens) → docs/flows/
 docs/                 IMPLEMENTATION_PLAN.md · DESIGN.md · PROJECT_LOG.md · flows/
 ```
 
@@ -176,7 +176,7 @@ node scripts/build-flows.mjs                                  # rebuilds the 7 b
 1. **Update the PRD to the two-platform product** (problem statement §1, goals §2, personas §3 — add *business owner* persona, journeys §5 — add P1 shopper + business journeys, features §6 — P1 features first, mock list → point to `docs/flows/`). The Claude Doc still describes only Snap-to-Sell.
 2. **Decide payments** (open question): Razorpay Route split + hold vs. simple Checkout + manual payouts; commission 8% / 5% confirmed?
 3. **Confirm `ar970` accepted the invite**; agree who owns which phase (B1–B5 below).
-4. **Restore or regenerate the flow-board PNGs** — on 25 Nov the 7 `docs/flows/*.png` files were missing from disk (deleted outside git; SVGs and screenshots are intact). Run `node scripts/build-flows.mjs` or `git checkout -- docs/flows/*.png`.
+4. ~~Flow-board PNGs~~ — **decision (25 Nov): flow boards are SVG only.** The PNG copies were removed from the repo and the build script no longer writes them. Don't re-add PNG exports.
 
 ### Build (Phase B — see `IMPLEMENTATION_PLAN.md` §8 for acceptance criteria)
 5. **B1 Supabase:** project, migration from plan §5.2, RLS §5.3, seed script from `src/data.js`.

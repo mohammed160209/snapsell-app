@@ -1,6 +1,6 @@
 # SnapSell Local — user flows
 
-Each board shows the **real app screens** (captured from the running app at iPhone size, 390 × 844) with arrows labelled by the exact button you tap. Open the `.svg` in a browser for full quality; the `.png` is the same board as an image.
+Each board shows the **real app screens** (captured from the running app at iPhone size, 390 × 844) with arrows labelled by the exact button you tap. Open the `.svg` files in a browser; they are the only board format kept in the repo.
 
 | Board | What it shows |
 |---|---|
@@ -26,7 +26,7 @@ Each board shows the **real app screens** (captured from the running app at iPho
 ```bash
 npm run dev                          # keep it running on port 5179 (or pass another URL)
 node scripts/capture-screens.mjs     # → docs/flows/screens/*.png (52 screens)
-node scripts/build-flows.mjs         # → docs/flows/*.svg + *.png
+node scripts/build-flows.mjs         # → docs/flows/*.svg (SVG only)
 ```
 
 `capture-screens.mjs` uses `playwright-core` with the Chromium in `~/.cache/ms-playwright` (set `CHROME=/path/to/chrome` to use another).

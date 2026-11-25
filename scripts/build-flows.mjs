@@ -1,4 +1,4 @@
-// Builds user-flow boards (SVG + PNG) from the real screenshots in docs/flows/screens.
+// Builds user-flow boards (SVG only) from the real screenshots in docs/flows/screens.
 // Run scripts/capture-screens.mjs first. Usage: node scripts/build-flows.mjs
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync, mkdtempSync } from 'node:fs';
@@ -107,7 +107,6 @@ function board({ file, title, subtitle, nodes, edges }) {
   out.push('</svg>');
   const svgPath = join(DIR, `${file}.svg`);
   writeFileSync(svgPath, out.join('\n'));
-  execFileSync('magick', ['-density', '96', svgPath, '-quality', '88', join(DIR, `${file}.png`)]);
   console.log('✓', file, `${W}×${H}`);
 }
 
