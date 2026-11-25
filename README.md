@@ -1,19 +1,22 @@
-# SnapSell Local (v1)
+# SnapSell Local
 
-Hyperlocal marketplace where early-stage local brands (home bakers, candle makers, small studios) sell to shoppers in their neighbourhood. Team 15 hackathon project.
+Hyperlocal marketplace for Bengaluru neighbourhoods, built by Team 15 (MESA BYOP hackathon). Two platforms in one mobile-first web app:
 
-## What works (mock data, saved in the browser)
-- **Onboarding:** choose "I want to shop local" or "I run a local business", phone + OTP (demo code `1234`), profile / storefront setup. Demo accounts on the welcome screen.
-- **Buyer app:** search, categories, brand storefronts, product detail, cart across brands, delivery or pickup, UPI (simulated Razorpay) or pay on delivery, order tracking, cancel.
-- **Business app:** dashboard (sales, earnings after 8% commission, open orders, low stock), order handling (accept → out for delivery / ready for pickup → completed, decline), products (add, edit, hide, delete, stock +/-), storefront settings and payouts.
-- **Secondhand (every user buys and sells):** feed, AI-assisted sell flow, meet-in-person or ship selling modes, deals with handover code / tracking, chat.
-- **Admin console:** GMV, commission, sales by seller, approve / suspend sellers, all orders.
+- **Local brands** — early-stage local businesses (home bakers, candle makers, small studios) sell to shoppers within 5 km. Delivery or pickup, 8% commission.
+- **Secondhand** — every shopper can also sell: snap photos, AI writes the listing, meet in person or ship with payment held until it arrives.
 
-## Run locally
+**Live:** https://snapsell-local.icesaviour02.workers.dev/ · Demo accounts on the welcome screen (OTP `1234`, handover code `4827`).
+
+## Docs
+- `docs/PROJECT_LOG.md` — history, decisions, current status, what's next (start here)
+- `docs/IMPLEMENTATION_PLAN.md` — stack, database schema, screens, phases
+- `docs/DESIGN.md` — visual direction, tokens, libraries, per-screen inspiration
+- `docs/flows/` — user-flow boards built from real screenshots
+
+## Run
 ```bash
 npm install
 npm run dev
 ```
 
-## Next
-Real backend (Supabase), Razorpay payments.
+Current state: front-end with mock data saved in the browser. Next: Supabase backend, Razorpay test payments, real AI listings.
